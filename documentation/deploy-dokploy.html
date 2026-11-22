@@ -102,6 +102,7 @@
   <a href="#b">Docker Compose</a>
   <div class="grp">Referensi</div>
   <a href="#env">Daftar environment variable</a>
+  <a href="#dburl">DATABASE_URL</a>
   <a href="#secret">Membuat secret</a>
   <a href="#admin">Admin pertama &amp; darurat</a>
   <a href="#sosial">Aplikasi developer sosial</a>
@@ -202,7 +203,7 @@
     <li>Buka <span class="ui path">Project → Create Service → Database → PostgreSQL</span>.</li>
     <li>Isi Name <code>storyboard-db</code>, Database <code>storyboard</code>, User <code>storyboard</code>, dan generate password yang kuat.</li>
     <li><b>Kosongkan External Port</b>, supaya database hanya bisa diakses dari jaringan internal Dokploy.</li>
-    <li>Klik <span class="ui">Deploy</span>, lalu salin <b>Internal Connection URL</b>. Bentuknya <code>postgresql://storyboard:…@storyboard-db-xxxx:5432/storyboard</code>.</li>
+    <li>Klik <span class="ui">Deploy</span>, lalu salin <b>Internal Connection URL</b>. Bentuknya <code>postgresql://storyboard:…@storyboard-db-xxxx:5432/storyboard</code>. Cara memakainya ada di bagian <a href="#dburl">DATABASE_URL</a>.</li>
     <li>Di tab <span class="ui">Backups</span>, atur tujuan S3 dan jadwal sesuai kebijakan retensi.</li>
   </ol>
 </section>
@@ -329,7 +330,7 @@ THREADS_APP_SECRET=&lt;…&gt;</code></pre>
   <h3>Inti &amp; login</h3>
   <div class="table-wrap"><table>
     <tr><th>Variabel</th><th>Default</th><th>Keterangan</th></tr>
-    <tr><td><code>DATABASE_URL</code></td><td>—</td><td><b>Wajib.</b> Connection string PostgreSQL 13+.</td></tr>
+    <tr><td><code>DATABASE_URL</code></td><td>—</td><td><b>Wajib.</b> Connection string PostgreSQL 13+. Lihat <a href="#dburl">penjelasan lengkap</a>.</td></tr>
     <tr><td><code>ADMIN_USERNAME</code></td><td><code>admin</code></td><td>Username admin pertama.</td></tr>
     <tr><td><code>ADMIN_PASSWORD</code></td><td>kosong</td><td>Hanya dipakai saat tabel user kosong. Min. 12 karakter, tidak memuat username, bukan password umum. Aplikasi mencatat peringatan jika variabel ini masih diset setelah user ada. <b>Hapus setelah login pertama.</b></td></tr>
     <tr><td><code>SESSION_TTL_HOURS</code></td><td><code>12</code></td><td>Umur maksimum sesi (rentang 1–720 jam).</td></tr>
@@ -388,6 +389,63 @@ THREADS_APP_SECRET=&lt;…&gt;</code></pre>
     <tr><td><code>INSTAGRAM_APP_ID</code> / <code>_SECRET</code></td><td>kosong</td><td>Instagram. <code>INSTAGRAM_GRAPH_VERSION</code> default <code>v27.0</code>.</td></tr>
     <tr><td><code>THREADS_APP_ID</code> / <code>_SECRET</code></td><td>kosong</td><td>Threads. <code>THREADS_GRAPH_VERSION</code> default <code>v1.0</code>.</td></tr>
   </table></div>
+</section>
+
+<section id="dburl">
+  <h2>DATABASE_URL</h2>
+  <p class="lead">Memberi tahu aplikasi PostgreSQL mana yang dipakai: alamat server, akun, password, dan nama database. Ini satu-satunya variabel yang wajib ada; tanpa nilai ini aplikasi berhenti dengan error <code>DATABASE_URL is required</code>.</p>
+  <h3>Arti tiap bagian</h3>
+<pre><code>postgres://storyboard:CHANGE_ME@localhost:5432/storyboard?sslmode=disable</code></pre>
+  <div class="table-wrap"><table>
+    <tr><th>Bagian</th><th>Nilai contoh</th><th>Arti</th></tr>
+    <tr><td>Skema</td><td><code>postgres://</code></td><td>Jenis koneksi PostgreSQL. <code>postgresql://</code> juga boleh, keduanya sama.</td></tr>
+    <tr><td>User</td><td><code>storyboard</code></td><td>Akun login ke PostgreSQL.</td></tr>
+    <tr><td>Password</td><td><code>CHANGE_ME</code></td><td><b>Placeholder, wajib diganti</b> dengan password akun database.</td></tr>
+    <tr><td>Host</td><td><code>localhost</code></td><td>Alamat server database. <code>localhost</code> berarti database di komputer yang sama.</td></tr>
+    <tr><td>Port</td><td><code>5432</code></td><td>Port standar PostgreSQL.</td></tr>
+    <tr><td>Database</td><td><code>storyboard</code></td><td>Nama database tempat aplikasi membuat tabel.</td></tr>
+    <tr><td>Opsi</td><td><code>sslmode=disable</code></td><td>Koneksi ke database tidak dienkripsi TLS. Lihat <a href="#dburl-ssl">pilihan sslmode</a>.</td></tr>
+  </table></div>
+  <p>Aplikasi memakai PostgreSQL 13 atau lebih baru. Saat start, aplikasi langsung mengecek koneksi, lalu membuat atau memperbarui semua tabel sendiri (migrasi otomatis). Anda cukup menyiapkan database kosong.</p>
+
+  <h3>Nilai per lingkungan</h3>
+  <div class="grid g2">
+    <div class="card"><b>1. Development lokal</b> (<code>docker-compose.yml</code> di repo)
+<pre><code>POSTGRES_PASSWORD='password-lokal-anda' docker compose up -d</code></pre>
+<pre><code>DATABASE_URL=postgres://storyboard:password-lokal-anda@localhost:5432/storyboard?sslmode=disable</code></pre>
+      Database ini hanya bisa diakses dari komputer Anda sendiri (<code>127.0.0.1</code>).</div>
+    <div class="card"><b>2. Dokploy, Opsi A</b> (PostgreSQL dibuat dari menu Dokploy)<br>Salin <b>Internal Connection URL</b> dari halaman database Dokploy, lalu tambahkan <code>?sslmode=disable</code>.
+<pre><code>DATABASE_URL=postgresql://storyboard:&lt;password&gt;@storyboard-db-xxxx:5432/storyboard?sslmode=disable</code></pre>
+      Host-nya berupa nama service internal Dokploy, <b>bukan</b> <code>localhost</code>.</div>
+    <div class="card"><b>3. Dokploy, Opsi B</b> (Docker Compose)<br><b>Jangan isi <code>DATABASE_URL</code>.</b> Cukup isi <code>POSTGRES_PASSWORD</code>, dan <code>docker-compose.dokploy.yml</code> menyusun URL-nya otomatis ke host <code>db</code>.</div>
+    <div class="card"><b>4. Database terkelola</b> (AWS RDS, Azure, Google Cloud SQL, dan sejenisnya)<br>Koneksi lewat jaringan luar, jadi wajib dienkripsi.
+<pre><code>DATABASE_URL=postgres://storyboard:&lt;password&gt;@db.example.com:5432/storyboard?sslmode=verify-full</code></pre></div>
+  </div>
+
+  <h3 id="dburl-ssl">Pilihan <code>sslmode</code></h3>
+  <div class="table-wrap"><table>
+    <tr><th>Nilai</th><th>Kapan dipakai</th></tr>
+    <tr><td><code>disable</code></td><td>Database di mesin yang sama atau di jaringan internal Docker/Dokploy yang tidak keluar dari server. Ini default di contoh.</td></tr>
+    <tr><td><code>require</code></td><td>Koneksi dienkripsi, tapi sertifikat server tidak dicek.</td></tr>
+    <tr><td><code>verify-full</code></td><td>Koneksi dienkripsi <b>dan</b> sertifikat serta nama host dicek. <b>Wajib</b> jika database ada di server lain atau di cloud.</td></tr>
+  </table></div>
+  <div class="callout">Dari sisi ISO/IEC 27001 A.8.24 (kriptografi): <code>disable</code> hanya pantas kalau lalu lintas data tidak pernah melewati jaringan luar.</div>
+
+  <h3>Hal yang sering salah</h3>
+  <ul class="plain">
+    <li><b>Password dengan karakter khusus</b> (<code>@ : / ? # % &amp;</code>) harus di-encode, karena karakter itu punya arti di dalam URL. Contoh: <code>p@ss#1</code> ditulis <code>p%40ss%231</code>. Paling mudah, buat password yang hanya berisi huruf dan angka, misalnya dari <code>openssl rand -hex 24</code>.</li>
+    <li><b><code>localhost</code> di dalam container</b> berarti container aplikasi itu sendiri, bukan database. Pakai nama service atau host internal.</li>
+    <li><b>Error <code>ping database: ...</code> saat start</b> biasanya berarti host, port, password, atau nama database salah, atau database belum siap.</li>
+    <li><b>Pengaturan koneksi opsional</b> bisa ditambahkan sebagai parameter, contohnya <code>&amp;pool_max_conns=10</code> untuk membatasi jumlah koneksi aplikasi ke database.</li>
+  </ul>
+
+  <h3>Keamanan</h3>
+  <ul class="plain">
+    <li><code>DATABASE_URL</code> berisi password, jadi <b>perlakukan sebagai secret</b>. Isi hanya lewat <code>.env</code> lokal (sudah masuk <code>.gitignore</code>) atau tab Environment Dokploy. Jangan taruh di repo, chat, atau tiket.</li>
+    <li><code>.env.example</code> sengaja memakai <code>CHANGE_ME</code> supaya tidak ada password asli di repo publik.</li>
+    <li>Aplikasi tidak menulis URL ini ke log. Saat koneksi gagal, error yang dicatat tidak memuat password.</li>
+    <li>Pakai user database khusus aplikasi dengan password kuat. Jangan pakai superuser <code>postgres</code>. Database juga jangan dibuka ke internet; di Dokploy, kosongkan External Port.</li>
+  </ul>
 </section>
 
 <section id="secret">

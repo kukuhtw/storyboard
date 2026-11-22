@@ -142,7 +142,7 @@ Ringkasan teks: [DEPLOY-DOKPLOY.md](DEPLOY-DOKPLOY.md) (Dockerfile + Dokploy, he
 |---|---|---|
 | [documentation/tutorial.html](documentation/tutorial.html) | Pengguna | Login, buat proyek, 7 tahap pipeline, referensi, revisi, render, publikasi (bergambar) |
 | [documentation/tutorial-admin.html](documentation/tutorial-admin.html) | Admin | Admin pertama, kelola user, audit log, akun sosial, persetujuan, API key, akses darurat |
-| [documentation/deploy-dokploy.html](documentation/deploy-dokploy.html) | DevOps | Deploy ke Dokploy step by step, environment, aplikasi developer sosial media, checklist |
+| [documentation/deploy-dokploy.html](documentation/deploy-dokploy.html) | DevOps | Deploy ke Dokploy step by step, environment (termasuk penjelasan `DATABASE_URL`), aplikasi developer sosial media, checklist |
 | [documentation/user-journey.html](documentation/user-journey.html) | Product/UX | Persona, peta perjalanan pengguna, pola revisi |
 | [documentation/lisensi.html](documentation/lisensi.html) | Semua / Legal | Dual licensing AGPL-3.0 + komersial, kewajiban per skenario, CLA, komponen pihak ketiga, FAQ |
 
