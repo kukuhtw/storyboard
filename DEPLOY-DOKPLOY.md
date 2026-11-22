@@ -50,6 +50,9 @@ OPENAI_TTS_INSTRUCTIONS=Warm, friendly narrator, medium pace
 
 MAX_UPLOAD_MB=100
 
+# Link "Source code" di footer UI (AGPL-3.0 pasal 13). Ubah jika kode dimodifikasi.
+SOURCE_URL=https://github.com/kukuhtw/storyboard/
+
 # Publikasi sosial media
 PUBLIC_BASE_URL=https://storyboard.domainanda.com
 TOKEN_ENC_KEY=<openssl rand -base64 32>

@@ -77,3 +77,6 @@ pre.json { background: var(--panel2); padding: 10px; border-radius: 8px; overflo
 .temp-box { margin-bottom: 16px; }
 .temp-pw { font-size: 18px; letter-spacing: .05em; padding: 6px 10px; background: var(--panel); border: 1px solid var(--border); border-radius: 6px; user-select: all; }
 .kv td { padding: 4px 12px 4px 0; } .kv td:first-child { color: var(--muted); }
+/* footer: source code link (AGPL-3.0 section 13) */
+.site-foot { text-align: center; color: var(--muted); font-size: 12px; padding: 18px 16px 28px; border-top: 1px solid var(--border); }
+.site-foot a { color: inherit; text-decoration: underline; }

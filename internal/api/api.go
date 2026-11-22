@@ -48,6 +48,7 @@ func (s *Server) Routes() http.Handler {
 	mux.HandleFunc("POST /api/login", s.login)
 	mux.HandleFunc("POST /api/logout", s.logout)
 	mux.HandleFunc("GET /healthz", s.healthz) // unauthenticated; reveals nothing but up/down
+	mux.HandleFunc("GET /api/about", s.about) // unauthenticated; public license/source info only
 
 	auth := func(h http.HandlerFunc) http.Handler { return s.requireAuth(h) }
 	admin := func(h http.HandlerFunc) http.Handler { return s.requireAuth(s.adminOnly(h)) }
@@ -115,6 +116,16 @@ func (s *Server) logRequests(next http.Handler) http.Handler {
 		if strings.HasPrefix(r.URL.Path, "/api/") || sw.code >= 400 {
 			slog.Info("http", "method", r.Method, "path", r.URL.Path, "status", sw.code, "ms", time.Since(start).Milliseconds())
 		}
+	})
+}
+
+// about returns only public information: the license and where to get the
+// source code (AGPL-3.0 section 13). Shown on the login page too.
+func (s *Server) about(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, 200, map[string]string{
+		"name":       "Storyboard Studio",
+		"license":    "AGPL-3.0-only OR LicenseRef-Storyboard-Commercial",
+		"source_url": s.Cfg.SourceURL,
 	})
 }
 

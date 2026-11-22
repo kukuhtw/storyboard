@@ -265,7 +265,7 @@ INSTAGRAM_APP_ID=&lt;…&gt;
 INSTAGRAM_APP_SECRET=&lt;…&gt;
 THREADS_APP_ID=&lt;…&gt;
 THREADS_APP_SECRET=&lt;…&gt;</code></pre>
-  <div class="callout warn">Aplikasi <b>menolak start</b> jika: <code>DATABASE_URL</code> kosong; provider <code>byteplus</code> dipilih tanpa <code>BYTEPLUS_API_KEY</code> atau tanpa model ID; <code>TTS_PROVIDER=openai</code> tanpa <code>OPENAI_API_KEY</code>; <code>PUBLIC_BASE_URL</code> tidak memakai <code>https://</code>; atau <code>TOKEN_ENC_KEY</code> terisi tapi bukan base64 dari tepat 32 byte. Pesan errornya terlihat di tab <span class="ui">Logs</span>.</div>
+  <div class="callout warn">Aplikasi <b>menolak start</b> jika: <code>DATABASE_URL</code> kosong; provider <code>byteplus</code> dipilih tanpa <code>BYTEPLUS_API_KEY</code> atau tanpa model ID; <code>TTS_PROVIDER=openai</code> tanpa <code>OPENAI_API_KEY</code>; <code>PUBLIC_BASE_URL</code> atau <code>SOURCE_URL</code> tidak memakai <code>https://</code>; atau <code>TOKEN_ENC_KEY</code> terisi tapi bukan base64 dari tepat 32 byte. Pesan errornya terlihat di tab <span class="ui">Logs</span>.</div>
   <p>Daftar lengkap variabel ada di bagian <a href="#env">Daftar environment variable</a>.</p>
 </section>
 
@@ -340,6 +340,7 @@ THREADS_APP_SECRET=&lt;…&gt;</code></pre>
     <tr><td><code>DATA_DIR</code></td><td><code>./data</code> (image: <code>/data</code>)</td><td>Lokasi file media.</td></tr>
     <tr><td><code>MAX_UPLOAD_MB</code></td><td><code>100</code></td><td>Batas ukuran unggahan.</td></tr>
     <tr><td><code>FFMPEG_PATH</code> / <code>FFPROBE_PATH</code></td><td><code>ffmpeg</code> / <code>ffprobe</code></td><td>Sudah diset di image. Jika ffmpeg tidak ada, tahap Render Final tidak tersedia.</td></tr>
+    <tr><td><code>SOURCE_URL</code></td><td><code>https://github.com/kukuhtw/storyboard/</code></td><td>Link "Source code" di footer UI (AGPL-3.0 pasal 13). Wajib <code>https://</code>. Jika kode dimodifikasi, arahkan ke source versi Anda. <code>off</code> menyembunyikan link (hanya untuk lisensi komersial).</td></tr>
     <tr><td><code>APP_ACCESS_TOKEN</code></td><td>—</td><td><b>Sudah tidak dipakai.</b> Diganti login per user. Hapus dari Environment lama.</td></tr>
   </table></div>
   <h3>Claude (storyboard, naskah, prompt)</h3>
@@ -481,6 +482,7 @@ openssl rand -base64 24</code></pre></div>
     <tr><td>Log <code>BYTEPLUS_API_KEY is required…</code> / <code>BYTEPLUS_IMAGE_MODEL is required…</code></td><td>Provider <code>byteplus</code> dipilih tapi key atau model ID kosong.</td></tr>
     <tr><td>Log <code>OPENAI_API_KEY is required when TTS_PROVIDER=openai</code></td><td>Isi key, atau set <code>TTS_PROVIDER=mock</code>.</td></tr>
     <tr><td>Log <code>PUBLIC_BASE_URL must use https://</code></td><td>Gunakan URL <code>https://</code>.</td></tr>
+    <tr><td>Log <code>SOURCE_URL must be an https:// URL</code></td><td>Isi URL repo dengan <code>https://</code>, atau <code>off</code> untuk deployment berlisensi komersial.</td></tr>
     <tr><td>Log <code>TOKEN_ENC_KEY must be base64 of exactly 32 random bytes</code></td><td>Buat ulang dengan <code>openssl rand -base64 32</code>.</td></tr>
     <tr><td>Log <code>no users exist yet…</code>, tidak bisa login</td><td>Set <code>ADMIN_PASSWORD</code> lalu restart, atau jalankan <code>reset-password</code>.</td></tr>
     <tr><td>Login berhasil tapi langsung kembali ke halaman login</td><td>Akses lewat HTTP biasa dengan <code>COOKIE_SECURE=true</code>. Aktifkan HTTPS di tab Domains.</td></tr>

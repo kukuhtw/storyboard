@@ -39,6 +39,7 @@ services:
       BYTEPLUS_VIDEO_MAX_SEC: ${BYTEPLUS_VIDEO_MAX_SEC:-10}
       BYTEPLUS_WATERMARK: ${BYTEPLUS_WATERMARK:-false}
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-}
+      SOURCE_URL: ${SOURCE_URL:-https://github.com/kukuhtw/storyboard/}   # AGPL §13 source link in UI footer
       TOKEN_ENC_KEY: ${TOKEN_ENC_KEY:-}
       POST_APPROVAL: ${POST_APPROVAL:-true}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}

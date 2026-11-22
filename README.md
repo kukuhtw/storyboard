@@ -242,6 +242,11 @@ Penjelasan lengkap dengan contoh skenario dan FAQ: **[documentation/lisensi.html
 | [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) | Daftar komponen pihak ketiga dan lisensinya (termasuk FFmpeg di image Docker) |
 | [THIRD_PARTY_LICENSES.txt](THIRD_PARTY_LICENSES.txt) | Teks lisensi lengkap semua modul Go yang ikut ter-compile |
 
+- **Link source code di UI** (AGPL pasal 13): footer setiap halaman, termasuk halaman login, menampilkan
+  link "Source code" ke `SOURCE_URL` (default `https://github.com/kukuhtw/storyboard/`). Informasi ini
+  juga tersedia lewat endpoint publik `GET /api/about`. Jika Anda **memodifikasi** kode dan
+  menjalankannya untuk orang lain, arahkan `SOURCE_URL` ke source code versi Anda. Nilai `off`
+  menyembunyikan link, dan hanya boleh dipakai pada deployment berlisensi komersial.
 - Setiap file sumber memakai header `SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Storyboard-Commercial`.
 - Image Docker menyertakan file lisensi di `/app/licenses/`.
 - Setelah menambah atau mengubah dependency, jalankan `go mod download && bash scripts/third-party-licenses.sh`,

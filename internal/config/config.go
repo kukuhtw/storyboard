@@ -9,6 +9,7 @@ package config
 import (
 	"bufio"
 	"fmt"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -20,6 +21,9 @@ type Provider struct {
 	URL    string
 	APIKey string
 }
+
+// DefaultSourceURL is the public repository of the upstream project.
+const DefaultSourceURL = "https://github.com/kukuhtw/storyboard/"
 
 type Config struct {
 	Addr        string
@@ -47,9 +51,13 @@ type Config struct {
 	FFmpegPath    string
 	FFprobePath   string
 	PublicBaseURL string // e.g. https://storyboard.example.com (OAuth redirects + signed media URLs)
-	TokenEncKey   string // base64 32 bytes; required for social publishing
-	PostApproval  bool   // posts need explicit approval before the scheduler publishes them
-	Social        SocialApps
+	// SourceURL is shown in the UI footer so network users can get the Corresponding
+	// Source (AGPL-3.0 section 13). Forks that modify the code must point it at their
+	// own source. "off" hides the link (only for commercially licensed deployments).
+	SourceURL    string
+	TokenEncKey  string // base64 32 bytes; required for social publishing
+	PostApproval bool   // posts need explicit approval before the scheduler publishes them
+	Social       SocialApps
 }
 
 type SocialApps struct {
@@ -178,6 +186,12 @@ func Load() (*Config, error) {
 	c.FFmpegPath = env("FFMPEG_PATH", "ffmpeg")
 	c.FFprobePath = env("FFPROBE_PATH", "ffprobe")
 	c.PublicBaseURL = strings.TrimRight(env("PUBLIC_BASE_URL", ""), "/")
+	c.SourceURL = env("SOURCE_URL", DefaultSourceURL)
+	if strings.EqualFold(c.SourceURL, "off") {
+		c.SourceURL = ""
+	} else if u, err := url.Parse(c.SourceURL); err != nil || u.Scheme != "https" || u.Host == "" {
+		return nil, fmt.Errorf("SOURCE_URL must be an https:// URL (or \"off\")")
+	}
 	c.TokenEncKey = env("TOKEN_ENC_KEY", "")
 	c.PostApproval = env("POST_APPROVAL", "true") != "false"
 	c.Social = SocialApps{

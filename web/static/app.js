@@ -435,6 +435,20 @@ function sceneCard(s, st) {
 }
 
 // ---------- boot ----------
+// Footer: link to the Corresponding Source (AGPL-3.0 section 13). Public endpoint,
+// so it also works on the login page. Only https URLs are accepted.
+async function loadAbout() {
+  try {
+    const r = await fetch("/api/about", { headers: { "X-Requested-With": "storyboard" } });
+    if (!r.ok) return;
+    const a = await r.json();
+    const link = document.getElementById("sourceLink");
+    if (!a.source_url) { document.getElementById("siteFoot").classList.add("hidden"); return; }
+    if (/^https:\/\//i.test(a.source_url)) link.href = a.source_url;
+  } catch { /* keep the default link */ }
+}
+loadAbout();
+
 async function boot() {
   try {
     state.me = await api("GET", "/api/me");

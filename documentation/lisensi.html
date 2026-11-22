@@ -250,6 +250,14 @@
   <p>Setiap file sumber (Go, JS, CSS, SQL, HTML di <code>cmd</code>, <code>internal</code>, <code>web</code>) diawali header:</p>
 <pre><code>// SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Storyboard-Commercial
 // Copyright (C) 2026 the Storyboard Studio copyright holder. See NOTICE.</code></pre>
+  <h3>Link source code di aplikasi</h3>
+  <p>Footer setiap halaman, termasuk halaman login, menampilkan link <b>Source code</b> ke nilai env <code>SOURCE_URL</code> (default <code>https://github.com/kukuhtw/storyboard/</code>). Informasi lisensi dan URL itu juga tersedia di endpoint publik <code>GET /api/about</code>.</p>
+  <ul class="plain">
+    <li>Pakai tanpa modifikasi: biarkan default.</li>
+    <li>Kode dimodifikasi dan dijalankan untuk orang lain: set <code>SOURCE_URL</code> ke repo versi Anda. Ini cara mudah memenuhi pasal 13.</li>
+    <li><code>SOURCE_URL=off</code> menyembunyikan link. Hanya boleh untuk deployment dengan lisensi komersial.</li>
+    <li>Nilai selain <code>https://…</code> atau <code>off</code> ditolak saat start.</li>
+  </ul>
   <p>Image Docker menyalin <code>LICENSE</code>, <code>NOTICE</code>, dan kedua file pihak ketiga ke <code>/app/licenses/</code>, serta memberi label OCI <code>org.opencontainers.image.licenses</code>.</p>
 </section>
 
@@ -262,7 +270,7 @@
     <li>☐ Pasang bot CLA di repo dan simpan catatan tanda tangan.</li>
     <li>☐ Daftarkan merek "Storyboard Studio".</li>
     <li>☐ Bersihkan repo dan riwayat Git dari secret, <code>.env</code>, data/screenshot nasabah, serta nama atau domain internal (ISO/IEC 27001 A.5.14, A.8.12). Screenshot tutorial saat ini hanya berisi data fiktif.</li>
-    <li>☐ Saran: tambahkan link "Source code" di UI aplikasi, agar fork yang memodifikasi lebih mudah memenuhi pasal 13.</li>
+    <li>☑ Link "Source code" di footer UI sudah tersedia (lihat bawah). Pastikan repo <code>https://github.com/kukuhtw/storyboard/</code> sudah publik saat aplikasi dirilis.</li>
   </ul>
 </section>
 
