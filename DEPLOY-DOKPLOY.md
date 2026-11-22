@@ -15,6 +15,7 @@ Prasyarat:
 ### 1. Buat database
 *Project → Create Service → Database → PostgreSQL*
 - Name: `storyboard-db`, Database: `storyboard`, User: `storyboard`, password: generate yang kuat.
+- Docker Image: `postgres:18` (aplikasi mendukung PostgreSQL 13+; 18 disarankan untuk instalasi baru).
 - **Jangan** isi *External Port*, supaya DB hanya bisa diakses dari jaringan internal Dokploy.
 - Deploy, lalu salin **Internal Connection URL** (bentuknya `postgresql://storyboard:...@storyboard-db-xxxx:5432/storyboard`).
 - Atur *Backups* (S3 destination) sesuai kebijakan retensi.
@@ -75,6 +76,8 @@ diset di Dockerfile. Tidak ada secret yang di-bake ke image.
 
 ### 5. Domain (tab *Domains*)
 - Host: `storyboard.domainanda.com`, Container Port: `8080`, HTTPS: on, Certificate: Let's Encrypt.
+- **Port web = `8080`** (port di dalam container). Tidak perlu membuka/publish port ke host:
+  Traefik Dokploy menerima HTTPS di 443 dan meneruskan ke 8080. Port database 5432 tetap internal.
 
 ### 6. Zero-downtime / health check
 Tab *Advanced → Cluster Settings → Swarm Settings → Health Check*:
@@ -100,9 +103,40 @@ Klik **Deploy**. Migrasi database berjalan otomatis saat container start. Aktifk
 - *Domains*: service `app`, port `8080`, HTTPS on.
 - Deploy.
 
-Data disimpan di named volume `storyboard-media` dan `storyboard-pg`, sehingga bisa memakai fitur
+Database memakai image `postgres:18-alpine`. Data disimpan di named volume `storyboard-media` dan
+`storyboard-pg18` (di-mount ke `/var/lib/postgresql`, karena PostgreSQL 18 menyimpan data di
+`/var/lib/postgresql/18/docker`), sehingga bisa memakai fitur
 *Volume Backups* Dokploy.
 ⚠️ Menghapus service dengan centang "volumes" akan **menghapus data**. Backup dulu.
+
+---
+
+## Upgrade PostgreSQL 17 → 18 (hanya jika sudah punya data di versi 17)
+
+Format file data antar versi mayor tidak kompatibel. Karena itu versi 18 memakai volume **baru**
+(`storyboard-pg18`), dan volume lama `storyboard-pg` tidak disentuh. Tanpa langkah di bawah,
+aplikasi akan mulai dengan database kosong (data lama tetap aman di volume lama).
+
+Opsi B (Compose), via SSH ke server Dokploy:
+```sh
+# 1. SEBELUM redeploy: dump dari container Postgres 17 (lihat namanya dengan `docker ps`)
+docker exec <db17-container> pg_dump -U storyboard -d storyboard -Fc > storyboard-17.dump
+
+# 2. Redeploy versi baru (postgres:18-alpine + volume storyboard-pg18).
+#    Aplikasi start dan membuat skema kosong.
+
+# 3. Restore ke container Postgres 18
+docker exec -i <db18-container> pg_restore -U storyboard -d storyboard --clean --if-exists --no-owner < storyboard-17.dump
+
+# 4. Restart service app di Dokploy, lalu login dengan akun lama untuk verifikasi.
+```
+Simpan `storyboard-17.dump` di tempat aman (berisi seluruh data, termasuk hash password dan token
+terenkripsi) dan hapus setelah tidak diperlukan. Hapus volume lama `storyboard-pg` hanya setelah
+data versi 18 terverifikasi dan backup tersedia.
+
+Opsi A (database dari menu Dokploy): buat database baru dengan image `postgres:18`, lakukan
+`pg_dump` dari database lama dan `pg_restore` ke database baru dengan perintah yang sama, lalu
+ganti `DATABASE_URL` aplikasi ke database baru dan redeploy.
 
 ---
 

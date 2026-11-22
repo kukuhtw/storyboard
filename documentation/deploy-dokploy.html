@@ -108,6 +108,7 @@
   <a href="#sosial">Aplikasi developer sosial</a>
   <a href="#verif">Verifikasi</a>
   <a href="#ops">Backup, update, rollback</a>
+  <a href="#pg18">Upgrade PostgreSQL 17 → 18</a>
   <a href="#masalah">Pemecahan masalah</a>
   <a href="#keamanan">Checklist keamanan</a>
   <div class="grp">Dokumen lain</div>
@@ -202,6 +203,7 @@
   <ol class="steps">
     <li>Buka <span class="ui path">Project → Create Service → Database → PostgreSQL</span>.</li>
     <li>Isi Name <code>storyboard-db</code>, Database <code>storyboard</code>, User <code>storyboard</code>, dan generate password yang kuat.</li>
+    <li>Docker Image: <code>postgres:18</code>. Aplikasi mendukung PostgreSQL 13+, dan 18 disarankan untuk instalasi baru.</li>
     <li><b>Kosongkan External Port</b>, supaya database hanya bisa diakses dari jaringan internal Dokploy.</li>
     <li>Klik <span class="ui">Deploy</span>, lalu salin <b>Internal Connection URL</b>. Bentuknya <code>postgresql://storyboard:…@storyboard-db-xxxx:5432/storyboard</code>. Cara memakainya ada di bagian <a href="#dburl">DATABASE_URL</a>.</li>
     <li>Di tab <span class="ui">Backups</span>, atur tujuan S3 dan jadwal sesuai kebijakan retensi.</li>
@@ -285,6 +287,7 @@ THREADS_APP_SECRET=&lt;…&gt;</code></pre>
     <li>Buka tab <span class="ui">Domains</span> → tambah domain.</li>
     <li>Host <code>storyboard.domainanda.com</code>, Container Port <code>8080</code>, HTTPS <b>on</b>, Certificate <b>Let's Encrypt</b>.</li>
   </ol>
+  <div class="callout ok"><b>Port web = 8080.</b> Ini port di dalam container (<code>APP_ADDR=0.0.0.0:8080</code> di Dockerfile). Cukup isi <b>Container Port 8080</b> di tab Domains. <b>Tidak perlu</b> membuka atau publish port ke host: Traefik menerima HTTPS di port 443 lalu meneruskan ke 8080. Port database 5432 tetap internal.</div>
   <p>HTTPS wajib: cookie sesi memakai flag <code>Secure</code>, jadi login tidak akan bertahan lewat HTTP biasa. Jika fitur sosial dipakai, <code>PUBLIC_BASE_URL</code> harus sama persis dengan domain ini (tanpa garis miring di akhir).</p>
 </section>
 
@@ -319,7 +322,7 @@ THREADS_APP_SECRET=&lt;…&gt;</code></pre>
   <div class="table-wrap"><table>
     <tr><th>Service</th><th>Isi</th></tr>
     <tr><td><code>app</code></td><td>Build dari <code>Dockerfile</code>. Menunggu <code>db</code> sehat (<code>depends_on: service_healthy</code>). <code>DATABASE_URL</code> dirakit otomatis ke host <code>db</code>. Volume <code>storyboard-media:/data</code>.</td></tr>
-    <tr><td><code>db</code></td><td><code>postgres:17-alpine</code>, user/DB <code>storyboard</code>, port 5432 hanya <code>expose</code> (tidak dipublikasikan). Health check <code>pg_isready</code>. Volume <code>storyboard-pg</code>.</td></tr>
+    <tr><td><code>db</code></td><td><code>postgres:18-alpine</code>, user/DB <code>storyboard</code>, port 5432 hanya <code>expose</code> (tidak dipublikasikan). Health check <code>pg_isready</code>. Volume <code>storyboard-pg18</code> di-mount ke <code>/var/lib/postgresql</code> (PostgreSQL 18 menyimpan data di <code>/var/lib/postgresql/18/docker</code>).</td></tr>
   </table></div>
   <div class="callout warn">Di Opsi B, default provider adalah <code>mock</code> dan <code>COOKIE_SECURE</code> default <code>true</code>. Menghapus service dengan centang <b>volumes</b> akan <b>menghapus seluruh data</b>. Backup dulu.</div>
 </section>
@@ -519,7 +522,7 @@ openssl rand -base64 24</code></pre></div>
   <div class="grid g3">
     <div class="card"><b>Backup</b><ul class="plain">
       <li>Opsi A: tab <span class="ui">Backups</span> pada database (S3).</li>
-      <li>Volume <code>storyboard-media</code> (dan <code>storyboard-pg</code> di Opsi B): fitur Volume Backups Dokploy.</li>
+      <li>Volume <code>storyboard-media</code> (dan <code>storyboard-pg18</code> di Opsi B): fitur Volume Backups Dokploy.</li>
       <li>Database dan volume saling terkait. Backup keduanya pada jadwal yang sama.</li>
       <li>Uji restore secara berkala.</li></ul></div>
     <div class="card"><b>Update</b><ul class="plain">
@@ -530,6 +533,30 @@ openssl rand -base64 24</code></pre></div>
       <li>Deploy ulang commit sebelumnya dari tab Deployments, atau revert di Git.</li>
       <li>Migrasi tidak punya skrip "down". Jika skema sudah berubah, restore backup database dari sebelum update.</li></ul></div>
   </div>
+</section>
+
+<section id="pg18">
+  <h2>Upgrade PostgreSQL 17 → 18</h2>
+  <p class="lead">Hanya perlu jika Anda <b>sudah punya data</b> di PostgreSQL 17. Instalasi baru langsung memakai 18 dan bisa melewati bagian ini.</p>
+  <p>Format file data antar versi mayor tidak kompatibel. Karena itu versi 18 memakai volume <b>baru</b> <code>storyboard-pg18</code>, dan volume lama <code>storyboard-pg</code> tidak disentuh. Tanpa langkah di bawah, aplikasi mulai dengan database kosong, sementara data lama tetap aman di volume lama.</p>
+  <h3>Opsi B (Compose), via SSH ke server Dokploy</h3>
+<pre><code># 1. SEBELUM redeploy: dump dari container Postgres 17 (lihat namanya dengan `docker ps`)
+docker exec &lt;db17-container&gt; pg_dump -U storyboard -d storyboard -Fc &gt; storyboard-17.dump
+
+# 2. Redeploy versi baru (postgres:18-alpine + volume storyboard-pg18).
+#    Aplikasi start dan membuat skema kosong.
+
+# 3. Restore ke container Postgres 18
+docker exec -i &lt;db18-container&gt; pg_restore -U storyboard -d storyboard --clean --if-exists --no-owner &lt; storyboard-17.dump
+
+# 4. Restart service app di Dokploy, lalu login dengan akun lama untuk verifikasi.</code></pre>
+  <h3>Opsi A (database dari menu Dokploy)</h3>
+  <ol class="steps">
+    <li>Buat database baru dengan Docker Image <code>postgres:18</code>.</li>
+    <li>Jalankan <code>pg_dump</code> dari database lama dan <code>pg_restore</code> ke database baru, dengan perintah yang sama seperti di atas.</li>
+    <li>Ganti <code>DATABASE_URL</code> aplikasi ke database baru, lalu redeploy.</li>
+  </ol>
+  <div class="callout warn">File dump berisi seluruh data, termasuk hash password dan token terenkripsi. Simpan di tempat aman dan hapus setelah tidak diperlukan. Hapus volume atau database lama hanya setelah data di versi 18 terverifikasi dan backup tersedia.</div>
 </section>
 
 <section id="masalah">
@@ -547,6 +574,8 @@ openssl rand -base64 24</code></pre></div>
     <tr><td>Login ditolak "akun terkunci sementara"</td><td>5 kali gagal → terkunci 15 menit. Admin bisa klik <span class="ui">Buka kunci</span>.</td></tr>
     <tr><td>HTTP 429 saat login</td><td>Lebih dari 10 kali gagal per IP dalam 15 menit. Tunggu, atau restart container (penghitung di memori). Pastikan <code>TRUST_PROXY=true</code>, agar semua user tidak terbaca sebagai satu IP proxy.</td></tr>
     <tr><td>Health check gagal, <code>db_unavailable</code></td><td>Host DB salah atau DB belum siap. Pakai Internal Connection URL dari Dokploy.</td></tr>
+    <tr><td>Setelah ganti ke PostgreSQL 18, semua proyek dan akun hilang (aplikasi seperti baru)</td><td>Versi 18 memakai volume baru <code>storyboard-pg18</code>. Data lama masih ada di volume <code>storyboard-pg</code>. Pindahkan dengan langkah <a href="#pg18">Upgrade 17 → 18</a>.</td></tr>
+    <tr><td>Container Postgres 18 gagal start (error mount <code>/var/lib/postgresql/data</code>)</td><td>Volume masih di-mount ke path lama. Mulai versi 18, mount ke <code>/var/lib/postgresql</code>.</td></tr>
     <tr><td>File hilang setelah redeploy</td><td>Volume <code>/data</code> belum di-mount (langkah A4).</td></tr>
     <tr><td>Render Final tidak tersedia</td><td>ffmpeg tidak ditemukan. Di image resmi sudah ada; periksa <code>FFMPEG_PATH</code>.</td></tr>
     <tr><td>OAuth gagal "redirect_uri mismatch"</td><td>Redirect URI di konsol platform harus sama persis dengan <code>PUBLIC_BASE_URL</code> + <code>/oauth/&lt;platform&gt;/callback</code>.</td></tr>

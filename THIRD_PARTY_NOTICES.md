@@ -50,7 +50,7 @@ fonts or CDNs.
 |---|---|---|---|
 | **FFmpeg** (`ffmpeg`, `ffprobe`) | Installed in the Docker runtime image from the Alpine package repository | LGPL-2.1-or-later, or GPL-2.0-or-later when built with GPL components | Storyboard Studio calls ffmpeg as an external process and does not link to it. If you **distribute the Docker image**, you also distribute FFmpeg: include its license and offer its source. Check the exact license with `docker run --rm --entrypoint apk <image> info --license ffmpeg`. Source: Alpine aports and https://ffmpeg.org. |
 | Alpine Linux base image and packages (`ca-certificates`, `tzdata`, musl, busybox) | Docker runtime image | Various (MIT, GPL-2.0, MPL-2.0, public domain) | Distributed as part of the image. Package licenses: `apk info --license <package>`. |
-| PostgreSQL (`postgres:17-alpine`) | `docker-compose.dokploy.yml` / `docker-compose.yml`, pulled by the user | PostgreSQL License | Not included in the Storyboard Studio image. |
+| PostgreSQL (`postgres:18-alpine` / `postgres:18`) | `docker-compose.dokploy.yml` / `docker-compose.yml`, pulled by the user | PostgreSQL License | Not included in the Storyboard Studio image. |
 
 ## 4. External services (not software we distribute)
 The app sends requests to the APIs of Anthropic, BytePlus ModelArk, OpenAI, Google (YouTube), Meta

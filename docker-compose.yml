@@ -1,7 +1,8 @@
 # Local PostgreSQL for development. Bound to localhost only.
 services:
   db:
-    image: postgres:17
+    # PostgreSQL 18 keeps data in /var/lib/postgresql/18/docker -> mount the parent directory.
+    image: postgres:18
     environment:
       POSTGRES_USER: storyboard
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
@@ -9,6 +10,6 @@ services:
     ports:
       - "127.0.0.1:5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata18:/var/lib/postgresql
 volumes:
-  pgdata:
+  pgdata18:

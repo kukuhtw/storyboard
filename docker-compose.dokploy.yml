@@ -67,7 +67,10 @@ services:
       - storyboard-media:/data   # named volume → eligible for Dokploy Volume Backups
 
   db:
-    image: postgres:17-alpine
+    # PostgreSQL 18: data lives in /var/lib/postgresql/18/docker, so the volume is mounted at
+    # /var/lib/postgresql (NOT .../data). New volume name so an old v17 volume is never reused by
+    # mistake; to move data from 17 see "Upgrade PostgreSQL 17 -> 18" in DEPLOY-DOKPLOY.md.
+    image: postgres:18-alpine
     restart: unless-stopped
     environment:
       POSTGRES_USER: storyboard
@@ -76,7 +79,7 @@ services:
     expose:
       - "5432"                    # internal only — never published to the host
     volumes:
-      - storyboard-pg:/var/lib/postgresql/data
+      - storyboard-pg18:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U storyboard -d storyboard"]
       interval: 10s
@@ -85,4 +88,4 @@ services:
 
 volumes:
   storyboard-media:
-  storyboard-pg:
+  storyboard-pg18:
