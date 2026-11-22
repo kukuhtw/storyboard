@@ -1,0 +1,87 @@
+# Dokploy "Docker Compose" deployment (Option B in DEPLOY-DOKPLOY.md).
+# - Set the domain in Dokploy UI → Domains tab (service: app, port: 8080). Dokploy adds the
+#   Traefik labels + network at deploy time; no manual labels needed here.
+# - Set variables in Dokploy UI → Environment. Dokploy writes them to .env next to this file;
+#   they are passed explicitly below (never baked into the image).
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://storyboard:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD required}@db:5432/storyboard?sslmode=disable
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}          # first admin only; remove after first login
+      SESSION_TTL_HOURS: ${SESSION_TTL_HOURS:-12}
+      SESSION_IDLE_MINUTES: ${SESSION_IDLE_MINUTES:-60}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      CLAUDE_MODEL: ${CLAUDE_MODEL:-claude-opus-5-5}
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-100}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      TRUST_PROXY: "true"
+      IMAGE_PROVIDER: ${IMAGE_PROVIDER:-mock}
+      IMAGE_API_URL: ${IMAGE_API_URL:-}
+      IMAGE_API_KEY: ${IMAGE_API_KEY:-}
+      VIDEO_PROVIDER: ${VIDEO_PROVIDER:-mock}
+      VIDEO_API_URL: ${VIDEO_API_URL:-}
+      VIDEO_API_KEY: ${VIDEO_API_KEY:-}
+      BYTEPLUS_API_KEY: ${BYTEPLUS_API_KEY:-}
+      BYTEPLUS_BASE_URL: ${BYTEPLUS_BASE_URL:-https://ark.ap-southeast.bytepluses.com/api/v3}
+      BYTEPLUS_IMAGE_MODEL: ${BYTEPLUS_IMAGE_MODEL:-}
+      BYTEPLUS_VIDEO_MODEL: ${BYTEPLUS_VIDEO_MODEL:-}
+      BYTEPLUS_IMAGE_SIZE: ${BYTEPLUS_IMAGE_SIZE:-}
+      BYTEPLUS_VIDEO_RESOLUTION: ${BYTEPLUS_VIDEO_RESOLUTION:-720p}
+      BYTEPLUS_VIDEO_MIN_SEC: ${BYTEPLUS_VIDEO_MIN_SEC:-5}
+      BYTEPLUS_VIDEO_MAX_SEC: ${BYTEPLUS_VIDEO_MAX_SEC:-10}
+      BYTEPLUS_WATERMARK: ${BYTEPLUS_WATERMARK:-false}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-}
+      TOKEN_ENC_KEY: ${TOKEN_ENC_KEY:-}
+      POST_APPROVAL: ${POST_APPROVAL:-true}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      TIKTOK_CLIENT_KEY: ${TIKTOK_CLIENT_KEY:-}
+      TIKTOK_CLIENT_SECRET: ${TIKTOK_CLIENT_SECRET:-}
+      INSTAGRAM_APP_ID: ${INSTAGRAM_APP_ID:-}
+      INSTAGRAM_APP_SECRET: ${INSTAGRAM_APP_SECRET:-}
+      INSTAGRAM_GRAPH_VERSION: ${INSTAGRAM_GRAPH_VERSION:-v27.0}
+      THREADS_APP_ID: ${THREADS_APP_ID:-}
+      THREADS_APP_SECRET: ${THREADS_APP_SECRET:-}
+      THREADS_GRAPH_VERSION: ${THREADS_GRAPH_VERSION:-v1.0}
+      TTS_PROVIDER: ${TTS_PROVIDER:-mock}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_TTS_MODEL: ${OPENAI_TTS_MODEL:-gpt-4o-mini-tts}
+      OPENAI_TTS_VOICE: ${OPENAI_TTS_VOICE:-alloy}
+      OPENAI_TTS_INSTRUCTIONS: ${OPENAI_TTS_INSTRUCTIONS:-}
+      OPENAI_TTS_SPEED: ${OPENAI_TTS_SPEED:-1.0}
+      TTS_API_URL: ${TTS_API_URL:-}
+      TTS_API_KEY: ${TTS_API_KEY:-}
+      TTS_VOICE: ${TTS_VOICE:-default}
+    expose:
+      - "8080"
+    volumes:
+      - storyboard-media:/data   # named volume → eligible for Dokploy Volume Backups
+
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: storyboard
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD required}
+      POSTGRES_DB: storyboard
+    expose:
+      - "5432"                    # internal only — never published to the host
+    volumes:
+      - storyboard-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U storyboard -d storyboard"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  storyboard-media:
+  storyboard-pg:

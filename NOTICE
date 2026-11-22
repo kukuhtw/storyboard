@@ -1,0 +1,29 @@
+Storyboard Studio
+Copyright (C) 2026 [NAMA PEMEGANG HAK CIPTA / COPYRIGHT HOLDER]
+
+This program is dual-licensed. You may use it under EITHER:
+
+  1. the GNU Affero General Public License, version 3 only (AGPL-3.0-only),
+     reproduced in the file LICENSE; OR
+  2. a separate commercial license agreement signed with the copyright holder.
+     See COMMERCIAL-LICENSE.md. Contact: [EMAIL LISENSI / LICENSING EMAIL]
+
+SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Storyboard-Commercial
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for details.
+
+Network use (AGPL-3.0 section 13): if you modify this program and let users
+interact with it over a network, you must offer those users the Corresponding
+Source of your modified version.
+
+Trademarks: the licenses above do not grant any right to use the name
+"Storyboard Studio" or its logos, except as needed to describe the origin of
+the software. Forks must use a different name.
+
+Third-party components keep their own licenses. See THIRD_PARTY_NOTICES.md and
+THIRD_PARTY_LICENSES.txt.
+
+Contributions are accepted only under the Contributor License Agreement in
+CLA.md.

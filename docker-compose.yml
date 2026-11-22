@@ -1,0 +1,14 @@
+# Local PostgreSQL for development. Bound to localhost only.
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: storyboard
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: storyboard
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:

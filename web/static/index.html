@@ -1,0 +1,29 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Storyboard-Commercial
+     Copyright (C) 2026 the Storyboard Studio copyright holder. See NOTICE. -->
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Storyboard Studio</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="#/" class="brand">🎬 Storyboard Studio</a>
+  <span id="userNav" class="row hidden" style="flex:1">
+    <a href="#/social" class="small">Akun Sosial</a>
+    <a href="#/admin" id="adminLink" class="small hidden">Admin</a>
+    <span class="spacer"></span>
+    <span id="providerInfo" class="muted small"></span>
+    <a href="#/account" id="meLink" class="small" title="Akun Saya"></a>
+    <button id="logoutBtn" class="ghost">Keluar</button>
+  </span>
+</header>
+<main id="app"></main>
+<div id="toast" class="toast hidden"></div>
+<script src="/social.js"></script>
+<script src="/admin.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>

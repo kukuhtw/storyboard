@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Storyboard Studio — User Journey</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --panel: #ffffff; --panel2: #f0f2f5; --border: #dde1e7;
+    --text: #1b1f27; --muted: #5f6878; --accent: #c98a00; --accent-bg: #fff6dc;
+    --violet: #6a4cf0; --violet-bg: #efebff; --ok: #15803d; --ok-bg: #e7f6ec;
+    --warn: #b45309; --warn-bg: #fdf1e3; --err: #b91c1c; --err-bg: #fdeaea;
+    --doc: #0369a1; --ad: #be185d; --drama: #6d28d9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115; --panel: #171a21; --panel2: #1e222b; --border: #2a2f3a;
+      --text: #e6e8ee; --muted: #8b93a7; --accent: #f5b301; --accent-bg: #2b2410;
+      --violet: #a594ff; --violet-bg: #221d3d; --ok: #4ade80; --ok-bg: #12261a;
+      --warn: #fbbf24; --warn-bg: #2b2210; --err: #f87171; --err-bg: #2d1515;
+      --doc: #38bdf8; --ad: #f472b6; --drama: #a78bfa;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  a { color: var(--violet); }
+  .layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); max-width: 1240px; margin: 0 auto; }
+  nav.toc { position: sticky; top: 0; align-self: start; height: 100vh; overflow-y: auto; padding: 28px 16px 28px 20px; border-right: 1px solid var(--border); }
+  nav.toc .brand { font-weight: 700; margin-bottom: 4px; }
+  nav.toc .sub { color: var(--muted); font-size: 12px; margin-bottom: 20px; }
+  nav.toc a { display: block; color: var(--text); text-decoration: none; padding: 5px 8px; border-radius: 6px; font-size: 14px; }
+  nav.toc a:hover { background: var(--panel2); }
+  nav.toc a.l2 { padding-left: 22px; color: var(--muted); font-size: 13px; }
+  main { padding: 32px 36px 96px; min-width: 0; }
+  header.hero { margin-bottom: 32px; }
+  header.hero h1 { font-size: 30px; line-height: 1.2; margin: 0 0 8px; }
+  header.hero p { color: var(--muted); max-width: 760px; margin: 0; }
+  section { margin: 0 0 48px; scroll-margin-top: 16px; }
+  h2 { font-size: 22px; margin: 0 0 6px; }
+  h3 { font-size: 17px; margin: 24px 0 8px; }
+  .lead { color: var(--muted); margin: 0 0 18px; max-width: 780px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; }
+  .grid { display: grid; gap: 14px; }
+  .g3 { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+  .g2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  .persona .role { font-size: 12px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; }
+  .persona h4 { margin: 2px 0 8px; font-size: 16px; }
+  .persona p { margin: 0 0 8px; color: var(--muted); font-size: 14px; }
+  .pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--border); background: var(--panel2); margin: 2px 4px 2px 0; }
+  .doc { color: var(--doc); } .ad { color: var(--ad); } .drama { color: var(--drama); }
+  figure { margin: 0; }
+  figure svg { width: 100%; height: auto; display: block; }
+  figcaption { color: var(--muted); font-size: 13px; margin-top: 8px; }
+  /* journey steps */
+  .journey { counter-reset: step; display: grid; gap: 16px; }
+  .step { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px 18px 66px; position: relative; scroll-margin-top: 16px; }
+  .step::before { counter-increment: step; content: counter(step); position: absolute; left: 18px; top: 18px; width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: #111; font-weight: 700; display: grid; place-items: center; }
+  .step h3 { margin: 2px 0 4px; }
+  .step .who { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+  .col h5 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  .col ul { margin: 0; padding-left: 18px; }
+  .col li { margin-bottom: 4px; }
+  .emotion { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; padding: 3px 10px; border-radius: 999px; margin-top: 12px; }
+  .emo-good { background: var(--ok-bg); color: var(--ok); }
+  .emo-mid { background: var(--warn-bg); color: var(--warn); }
+  .callout { border-left: 4px solid var(--violet); background: var(--violet-bg); padding: 10px 14px; border-radius: 8px; margin-top: 12px; font-size: 14px; }
+  .callout.warn { border-color: var(--warn); background: var(--warn-bg); }
+  .callout.err { border-color: var(--err); background: var(--err-bg); }
+  .callout.ok { border-color: var(--ok); background: var(--ok-bg); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: var(--panel2); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  tr:last-child td { border-bottom: 0; }
+  .table-wrap { overflow-x: auto; border-radius: 12px; }
+  .status { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .s-locked { background: var(--panel2); color: var(--muted); }
+  .s-ready { background: var(--accent-bg); color: var(--accent); }
+  .s-gen { background: var(--violet-bg); color: var(--violet); }
+  .s-review { background: var(--warn-bg); color: var(--warn); }
+  .s-approved { background: var(--ok-bg); color: var(--ok); }
+  kbd, code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 13px; background: var(--panel2); border: 1px solid var(--border); border-radius: 5px; padding: 1px 5px; }
+  details { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; margin-bottom: 10px; }
+  summary { cursor: pointer; font-weight: 600; }
+  details p, details ul { margin: 8px 0 0; color: var(--muted); }
+  .checklist { list-style: none; padding: 0; margin: 0; }
+  .checklist li { padding-left: 26px; position: relative; margin-bottom: 6px; }
+  .checklist li::before { content: "✓"; position: absolute; left: 4px; color: var(--ok); font-weight: 700; }
+  footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--border); padding-top: 16px; }
+  /* svg theming */
+  .svg-box { fill: var(--panel); stroke: var(--border); }
+  .svg-box-accent { fill: var(--accent-bg); stroke: var(--accent); }
+  .svg-box-ok { fill: var(--ok-bg); stroke: var(--ok); }
+  .svg-box-violet { fill: var(--violet-bg); stroke: var(--violet); }
+  .svg-box-warn { fill: var(--warn-bg); stroke: var(--warn); }
+  .svg-text { fill: var(--text); font: 600 13px system-ui, sans-serif; }
+  .svg-sub { fill: var(--muted); font: 11px system-ui, sans-serif; }
+  .svg-line { stroke: var(--muted); stroke-width: 1.5; fill: none; }
+  .svg-line-dash { stroke: var(--warn); stroke-width: 1.5; fill: none; stroke-dasharray: 5 4; }
+  .svg-arrow { fill: var(--muted); }
+  .svg-arrow-warn { fill: var(--warn); }
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+    nav.toc { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--border); padding: 16px; }
+    nav.toc a.l2 { display: none; }
+    main { padding: 24px 16px 64px; }
+    .step { padding: 16px 16px 16px 58px; }
+    .step::before { left: 14px; }
+  }
+  @media print {
+    nav.toc { display: none; } .layout { display: block; } main { padding: 0; }
+    .step, .card, details { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="toc" aria-label="Daftar isi">
+    <div class="brand">🎬 Storyboard Studio</div>
+    <div class="sub">Dokumentasi User Journey · v1.0</div>
+    <a href="#ringkasan">Ringkasan</a>
+    <a href="#persona">Persona pengguna</a>
+    <a href="#peta">Peta perjalanan</a>
+    <a href="#status">Status setiap tahap</a>
+    <a href="#journey">Langkah demi langkah</a>
+    <a class="l2" href="#j-login">Masuk</a>
+    <a class="l2" href="#j-proyek">Buat proyek</a>
+    <a class="l2" href="#j-referensi">Unggah referensi</a>
+    <a class="l2" href="#j-storyboard">Storyboard</a>
+    <a class="l2" href="#j-vo">Voice over</a>
+    <a class="l2" href="#j-audio">Audio VO</a>
+    <a class="l2" href="#j-prompt">Prompt gambar & video</a>
+    <a class="l2" href="#j-gambar">Gambar / foto</a>
+    <a class="l2" href="#j-video">Video</a>
+    <a class="l2" href="#j-render">Render final</a>
+    <a class="l2" href="#j-akun">Hubungkan akun sosial</a>
+    <a class="l2" href="#j-publikasi">Publikasi & jadwal</a>
+    <a class="l2" href="#j-export">Export & unduh</a>
+    <a class="l2" href="#j-hapus">Hapus proyek</a>
+    <a href="#revisi">Pola review & revisi</a>
+    <a href="#jenis">Tips per jenis video</a>
+    <a href="#data">Perlindungan data</a>
+    <a href="#masalah">Kendala & solusi</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <h1>User Journey Storyboard Studio</h1>
+      <p>Panduan alur kerja dari ide sampai klip video. Storyboard Studio memecah produksi video
+        <b class="doc">dokumentasi</b>, <b class="ad">iklan</b>, dan <b class="drama">drama</b> menjadi enam tahap.
+        Setiap tahap dibuat oleh AI, lalu Anda review, revisi, dan setujui sebelum lanjut.</p>
+    </header>
+
+    <!-- ===================== RINGKASAN ===================== -->
+    <section id="ringkasan">
+      <h2>Ringkasan</h2>
+      <p class="lead">Satu proyek = satu video. Anda menulis brief, AI menyusun hasil tiap tahap, dan Anda
+        memegang kendali penuh lewat tombol <b>Setujui</b>. Tahap berikutnya baru terbuka setelah tahap sebelumnya disetujui.</p>
+      <div class="grid g3">
+        <div class="card"><b>Claude (Anthropic)</b><br><span class="lead" style="margin:0">Menyusun storyboard, naskah voice over, serta prompt gambar & video.</span></div>
+        <div class="card"><b>BytePlus ModelArk</b><br><span class="lead" style="margin:0">Seedream membuat gambar/foto keyframe. Seedance membuat klip video dari keyframe.</span></div>
+        <div class="card"><b>OpenAI TTS</b><br><span class="lead" style="margin:0">Mengubah naskah voice over menjadi audio MP3 per scene.</span></div>
+      </div>
+    </section>
+
+    <!-- ===================== PERSONA ===================== -->
+    <section id="persona">
+      <h2>Persona pengguna</h2>
+      <p class="lead">Tiga tipe pengguna utama beserta tujuan dan kekhawatirannya.</p>
+      <div class="grid g3">
+        <div class="card persona">
+          <div class="role doc">Dokumentasi / Training</div>
+          <h4>Tim L&amp;D / Operasional</h4>
+          <p><b>Tujuan:</b> video tutorial proses (mis. cara klaim online) yang runtut dan mudah diikuti.</p>
+          <p><b>Kekhawatiran:</b> langkah terlewat, istilah salah, data nasabah terekspos.</p>
+          <span class="pill doc">Durasi 60–180 dtk</span><span class="pill">16:9</span><span class="pill">Foto dokumenter</span>
+        </div>
+        <div class="card persona">
+          <div class="role ad">Iklan</div>
+          <h4>Tim Marketing / Brand</h4>
+          <p><b>Tujuan:</b> iklan pendek dengan hook kuat dan call-to-action untuk media sosial.</p>
+          <p><b>Kekhawatiran:</b> tidak sesuai brand guideline, visual produk tidak akurat.</p>
+          <span class="pill ad">Durasi 15–30 dtk</span><span class="pill">9:16 / 4:5</span><span class="pill">Foto realistis</span>
+        </div>
+        <div class="card persona">
+          <div class="role drama">Drama</div>
+          <h4>Content Creator / Corporate Comms</h4>
+          <p><b>Tujuan:</b> film pendek bercerita (testimoni, kampanye emosional) dengan karakter konsisten.</p>
+          <p><b>Kekhawatiran:</b> wajah/pakaian karakter berubah antar scene, dialog kaku.</p>
+          <span class="pill drama">Durasi 60–120 dtk</span><span class="pill">16:9</span><span class="pill">Sinematik</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PETA ===================== -->
+    <section id="peta">
+      <h2>Peta perjalanan</h2>
+      <p class="lead">Alur utama dari kiri ke kanan. Garis putus-putus oranye adalah jalur revisi: Anda selalu bisa
+        kembali ke tahap sebelumnya lewat <b>Buka kembali</b>.</p>
+      <div class="card">
+        <figure>
+          <svg viewBox="0 0 1000 300" role="img" aria-label="Diagram alur: Masuk, Buat proyek, Referensi, lalu enam tahap Storyboard, Voice over, Audio, Prompt, Gambar, Video, dan Export">
+            <defs>
+              <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="svg-arrow"/></marker>
+              <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="svg-arrow-warn"/></marker>
+            </defs>
+            <!-- row 1: setup -->
+            <rect x="20" y="20" width="150" height="56" rx="10" class="svg-box"/>
+            <text x="95" y="45" text-anchor="middle" class="svg-text">Masuk</text>
+            <text x="95" y="62" text-anchor="middle" class="svg-sub">username + password</text>
+            <rect x="215" y="20" width="150" height="56" rx="10" class="svg-box"/>
+            <text x="290" y="45" text-anchor="middle" class="svg-text">Buat proyek</text>
+            <text x="290" y="62" text-anchor="middle" class="svg-sub">brief · jenis · gaya</text>
+            <rect x="410" y="20" width="150" height="56" rx="10" class="svg-box"/>
+            <text x="485" y="45" text-anchor="middle" class="svg-text">Referensi</text>
+            <text x="485" y="62" text-anchor="middle" class="svg-sub">gambar / video (opsional)</text>
+            <line x1="170" y1="48" x2="213" y2="48" class="svg-line" marker-end="url(#ar)"/>
+            <line x1="365" y1="48" x2="408" y2="48" class="svg-line" marker-end="url(#ar)"/>
+            <path d="M560 48 H 600 V 120 H 95 V 148" class="svg-line" marker-end="url(#ar)"/>
+            <!-- row 2: stages -->
+            <g>
+              <rect x="20" y="150" width="140" height="64" rx="10" class="svg-box-violet"/>
+              <text x="90" y="176" text-anchor="middle" class="svg-text">1 · Storyboard</text>
+              <text x="90" y="194" text-anchor="middle" class="svg-sub">Claude</text>
+              <rect x="185" y="150" width="140" height="64" rx="10" class="svg-box-violet"/>
+              <text x="255" y="176" text-anchor="middle" class="svg-text">2 · Voice over</text>
+              <text x="255" y="194" text-anchor="middle" class="svg-sub">Claude</text>
+              <rect x="350" y="150" width="140" height="64" rx="10" class="svg-box-accent"/>
+              <text x="420" y="176" text-anchor="middle" class="svg-text">3 · Audio VO</text>
+              <text x="420" y="194" text-anchor="middle" class="svg-sub">OpenAI TTS</text>
+              <rect x="515" y="150" width="140" height="64" rx="10" class="svg-box-violet"/>
+              <text x="585" y="176" text-anchor="middle" class="svg-text">4 · Prompt</text>
+              <text x="585" y="194" text-anchor="middle" class="svg-sub">Claude</text>
+              <rect x="680" y="150" width="140" height="64" rx="10" class="svg-box-accent"/>
+              <text x="750" y="176" text-anchor="middle" class="svg-text">5 · Gambar</text>
+              <text x="750" y="194" text-anchor="middle" class="svg-sub">BytePlus Seedream</text>
+              <rect x="845" y="150" width="140" height="64" rx="10" class="svg-box-accent"/>
+              <text x="915" y="176" text-anchor="middle" class="svg-text">6 · Video</text>
+              <text x="915" y="194" text-anchor="middle" class="svg-sub">BytePlus Seedance</text>
+            </g>
+            <line x1="160" y1="182" x2="183" y2="182" class="svg-line" marker-end="url(#ar)"/>
+            <line x1="325" y1="182" x2="348" y2="182" class="svg-line" marker-end="url(#ar)"/>
+            <line x1="490" y1="182" x2="513" y2="182" class="svg-line" marker-end="url(#ar)"/>
+            <line x1="655" y1="182" x2="678" y2="182" class="svg-line" marker-end="url(#ar)"/>
+            <line x1="820" y1="182" x2="843" y2="182" class="svg-line" marker-end="url(#ar)"/>
+            <!-- revision loop -->
+            <path d="M915 214 V 250 H 90 V 216" class="svg-line-dash" marker-end="url(#arw)"/>
+            <text x="500" y="268" text-anchor="middle" class="svg-sub">Buka kembali tahap mana pun untuk revisi</text>
+            <!-- export -->
+            <rect x="660" y="20" width="160" height="56" rx="10" class="svg-box-ok"/>
+            <text x="740" y="45" text-anchor="middle" class="svg-text">Export &amp; unduh</text>
+            <text x="740" y="62" text-anchor="middle" class="svg-sub">JSON · gambar · video · audio</text>
+            <path d="M915 150 V 48 H 822" class="svg-line" marker-end="url(#ar)"/>
+          </svg>
+          <figcaption>Ungu = dibuat Claude (teks). Kuning = dibuat provider media. Hijau = hasil akhir.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ===================== STATUS ===================== -->
+    <section id="status">
+      <h2>Status setiap tahap</h2>
+      <p class="lead">Setiap tahap memiliki status yang terlihat di stepper bagian atas halaman proyek.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Status</th><th>Arti</th><th>Yang bisa Anda lakukan</th></tr></thead>
+          <tbody>
+            <tr><td><span class="status s-locked">Terkunci</span></td><td>Tahap sebelumnya belum disetujui.</td><td>Selesaikan & setujui tahap sebelumnya.</td></tr>
+            <tr><td><span class="status s-ready">Siap</span></td><td>Tahap terbuka, belum dibuat (atau gagal dan siap dicoba lagi).</td><td>Isi feedback (opsional), klik <b>▶ Generate</b>.</td></tr>
+            <tr><td><span class="status s-gen">Memproses…</span></td><td>AI sedang bekerja. Halaman diperbarui otomatis.</td><td>Tunggu. Gambar/video bisa beberapa menit per scene.</td></tr>
+            <tr><td><span class="status s-review">Perlu review</span></td><td>Hasil siap diperiksa.</td><td>Edit per scene, <b>↻ Scene ini</b>, <b>↻ Generate ulang</b>, atau <b>✓ Setujui & lanjut</b>.</td></tr>
+            <tr><td><span class="status s-approved">Disetujui</span></td><td>Hasil dikunci, tahap berikutnya terbuka.</td><td><b>✎ Buka kembali untuk revisi</b> bila perlu perubahan.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===================== JOURNEY ===================== -->
+    <section id="journey">
+      <h2>Langkah demi langkah</h2>
+      <p class="lead">Untuk setiap langkah: apa tujuan pengguna, apa yang dilakukan, apa respons sistem, dan apa yang perlu diperiksa.</p>
+
+      <div class="journey">
+
+        <article class="step" id="j-login">
+          <h3>Masuk ke aplikasi</h3>
+          <div class="who">Semua persona · ±10 detik</div>
+          <div class="cols">
+            <div class="col"><h5>Tujuan</h5><ul><li>Mengakses ruang kerja proyek video.</li></ul></div>
+            <div class="col"><h5>Aksi pengguna</h5><ul><li>Buka URL aplikasi.</li><li>Masukkan <b>username</b> dan <b>password</b> dari admin, klik <b>Masuk</b>.</li><li>Login pertama: wajib ganti password sementara.</li></ul></div>
+            <div class="col"><h5>Respons sistem</h5><ul><li>Sesi berlaku 12 jam, berakhir setelah 60 menit tanpa aktivitas.</li><li>Header menampilkan provider aktif (Claude, image, video, tts).</li></ul></div>
+          </div>
+          <div class="callout warn">Akun terkunci 15 menit setelah 5 kali salah password. Lupa password? Minta admin melakukan reset.</div>
+        </article>
+
+        <article class="step" id="j-proyek">
+          <h3>Buat proyek & tulis brief</h3>
+          <div class="who">Semua persona · 3–10 menit</div>
+          <div class="cols">
+            <div class="col"><h5>Tujuan</h5><ul><li>Menjelaskan video yang diinginkan sejelas mungkin.</li></ul></div>
+            <div class="col"><h5>Aksi pengguna</h5><ul>
+              <li>Isi <b>Judul</b>, <b>Jenis video</b> (Dokumentasi / Iklan / Drama).</li>
+              <li>Atur <b>Durasi target</b>, <b>Rasio</b> (16:9, 9:16, 1:1, 4:5), <b>Bahasa</b>, <b>Tone</b>.</li>
+              <li>Pilih <b>Gaya visual</b>: Foto realistis, Sinematik, Foto dokumenter, Ilustrasi, 3D.</li>
+              <li>Tulis <b>Brief</b>, lalu klik <b>Buat Proyek</b>.</li></ul></div>
+            <div class="col"><h5>Respons sistem</h5><ul><li>Proyek dibuat. Tahap 1 berstatus <span class="status s-ready">Siap</span>, tahap lain terkunci.</li></ul></div>
+          </div>
+          <h5 style="margin:14px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)">Brief yang baik memuat</h5>
+          <ul class="checklist">
+            <li>Tujuan video dan siapa penontonnya.</li>
+            <li>Pesan utama (satu kalimat) dan call-to-action bila iklan.</li>
+            <li>Produk/proses/tokoh yang harus muncul, serta apa yang <i>tidak</i> boleh muncul.</li>
+            <li>Referensi mood atau contoh video yang disukai.</li>
+          </ul>
+          <div class="callout err"><b>Jangan</b> masukkan data pribadi nasabah/karyawan (nama lengkap, NIK, no. polis, no. HP, alamat) ke brief. Brief dikirim ke layanan AI pihak ketiga.</div>
+          <span class="emotion emo-good">😊 Cepat. Form singkat dengan nilai default yang masuk akal.</span>
+        </article>
+
+        <article class="step" id="j-referensi">
+          <h3>Unggah referensi (opsional, sangat disarankan)</h3>
+          <div class="who">Marketing & Drama paling diuntungkan · 2–5 menit</div>
+          <div class="cols">
+            <div class="col"><h5>Tujuan</h5><ul><li>Menjaga konsistensi gaya, produk, dan karakter.</li></ul></div>
+            <div class="col"><h5>Aksi pengguna</h5><ul>
+              <li>Di kartu <b>Referensi Proyek</b>, pilih file (PNG/JPEG/WEBP/GIF atau MP4/WEBM/MOV).</li>
+              <li>Tulis <b>catatan</b>: apa yang diambil dari referensi (mis. "warna & pencahayaan", "wajah presenter").</li>
+              <li>Centang <b>konfirmasi hak & persetujuan</b>, klik <b>Unggah</b>.</li>
+              <li>Referensi khusus satu scene bisa diunggah di kartu scene (bagian "Referensi scene").</li></ul></div>
+            <div class="col"><h5>Respons sistem</h5><ul>
+              <li>Gambar referensi dilihat Claude saat menyusun storyboard & prompt, dan dikirim ke Seedream saat membuat gambar.</li>
+              <li>Video referensi dipakai sebagai catatan untuk Claude.</li></ul></div>
+          </div>
+          <div class="callout">Catatan yang spesifik menghasilkan konsistensi jauh lebih baik daripada referensi tanpa catatan.</div>
+        </article>
+
+        <article class="step" id="j-storyboard">
+          <h3>Tahap 1 · Storyboard</h3>
+          <div class="who">Dibuat oleh Claude · ±30–90 detik</div>
+          <div class="cols">
+            <div class="col"><h5>Aksi pengguna</h5><ul><li>Klik <b>▶ Generate</b>.</li><li>Review logline, gaya visual, karakter, dan daftar scene.</li><li>Edit judul, deskripsi, shot, dan durasi per scene, lalu klik <b>Simpan</b>.</li></ul></div>
+            <div class="col"><h5>Respons sistem</h5><ul><li>Menampilkan logline, gaya visual, karakter, dan scene 3–10 detik.</li><li>Total durasi ditampilkan terhadap target.</li></ul></div>
+            <div class="col"><h5>Periksa</h5><ul class="checklist"><li>Alur cerita/proses lengkap & urut.</li><li>Total durasi mendekati target.</li><li>Karakter & gaya sesuai brief/referensi.</li></ul></div>
+          </div>
+          <div class="callout warn"><b>Generate ulang storyboard mengganti seluruh scene</b> beserta voice over, prompt, dan media per scene. Untuk perubahan kecil, edit scene secara manual.</div>
+        </article>
+
+        <article class="step" id="j-vo">
+          <h3>Tahap 2 · Voice over</h3>
+          <div class="who">Dibuat oleh Claude · ±20–60 detik</div>
+          <div class="cols">
+            <div class="col"><h5>Aksi pengguna</h5><ul><li>Klik <b>▶ Generate</b>.</li><li>Baca naskah per scene dengan suara keras. Edit kata yang janggal.</li><li>Pakai <b>↻ Scene ini</b> untuk menulis ulang satu scene dengan feedback.</li></ul></div>
+            <div class="col"><h5>Respons sistem</h5><ul><li>Naskah ±2,5 kata per detik sesuai durasi scene.</li><li>Drama bisa berformat dialog <code>NAMA: kalimat</code>.</li></ul></div>
+            <div class="col"><h5>Periksa</h5><ul class="checklist"><li>Istilah produk/proses benar.</li><li>Panjang naskah pas dengan durasi.</li><li>Tidak ada klaim berlebihan (iklan).</li></ul></div>
+          </div>
+        </article>
+
+        <article class="step" id="j-audio">
+          <h3>Tahap 3 · Audio VO</h3>
+          <div class="who">OpenAI TTS · ±5–15 detik per scene</div>
+          <div class="cols">
+            <div class="col"><h5>Aksi pengguna</h5><ul><li>Klik <b>▶ Generate</b>, lalu dengarkan audio tiap scene.</li><li>Jika pelafalan salah, ubah ejaan di naskah lalu klik <b>↻ Scene ini</b>.</li></ul></div>
+            <div class="col"><h5>Respons sistem</h5><ul><li>File MP3 per scene, bisa diputar & diunduh.</li><li>Suara & gaya bicara mengikuti pengaturan admin.</li></ul></div>
+            <div class="col"><h5>Periksa</h5><ul class="checklist"><li>Pelafalan nama/istilah.</li><li>Intonasi & tempo nyaman.</li><li>Durasi audio ≈ durasi scene.</li></ul></div>
+          </div>
+          <div class="callout">Tips pelafalan: tulis singkatan sesuai cara dibaca, mis. "B-P-J-S" atau "klaim online" alih-alih istilah asing yang ambigu.</div>
+        </article>
+
+        <article class="step" id="j-prompt">
+          <h3>Tahap 4 · Prompt gambar & video</h3>
+          <div class="who">Dibuat oleh Claude · ±30–90 detik</div>
+          <div class="cols">
+            <div class="col"><h5>Aksi pengguna</h5><ul><li>Klik <b>▶ Generate</b>.</li><li>Review <b>Image prompt</b> (keyframe) dan <b>Video prompt</b> (gerakan) per scene, dalam bahasa Inggris.</li><li>Tambahkan detail yang kurang, mis. warna seragam atau logo.</li></ul></div>
+            <div class="col"><h5>Respons sistem</h5><ul><li>Prompt sinematik yang mengulang deskripsi karakter agar konsisten.</li><li>Memakai gaya visual proyek & gambar referensi.</li></ul></div>
+            <div class="col"><h5>Periksa</h5><ul class="checklist"><li>Deskripsi karakter identik antar scene.</li><li>Tidak meminta teks di layar (AI sering salah eja).</li><li>Gerakan kamera sesuai shot storyboard.</li></ul></div>
+          </div>
+          <span class="emotion emo-mid">🤔 Tahap paling teknis. Revisi di sini menghemat biaya di tahap gambar & video.</span>
+        </article>
+
+        <article class="step" id="j-gambar">
+          <h3>Tahap 5 · Gambar / foto keyframe</h3>
+          <div class="who">BytePlus Seedream · ±10–40 detik per scene</div>
+          <div class="cols">
+            <div class="col"><h5>Aksi pengguna</h5><ul><li>Klik <b>▶ Generate</b>.</li><li>Bandingkan keyframe antar scene. Ulangi scene yang kurang dengan <b>↻ Scene ini</b> setelah memperbaiki prompt.</li><li>Unduh gambar via <b>⬇ unduh</b>.</li></ul></div>
+            <div class="col"><h5>Respons sistem</h5><ul><li>Satu gambar per scene dengan ukuran sesuai rasio proyek.</li><li>Gaya "Foto realistis" menghasilkan tampilan fotografi.</li></ul></div>
+            <div class="col"><h5>Periksa</h5><ul class="checklist"><li>Wajah, pakaian, dan produk konsisten.</li><li>Tidak ada anatomi/objek aneh.</li><li>Komposisi menyisakan ruang untuk teks overlay.</li></ul></div>
+          </div>
+          <div class="callout">Keyframe yang disetujui menjadi <b>frame pertama</b> video di tahap berikutnya, jadi pastikan sudah benar-benar sesuai.</div>
+        </article>
+
+        <article class="step" id="j-video">
+          <h3>Tahap 6 · Video</h3>
+          <div class="who">BytePlus Seedance · ±1–5 menit per scene</div>
+          <div class="cols">
+            <div class="col"><h5>Aksi pengguna</h5><ul><li>Klik <b>▶ Generate</b> (boleh ditinggal, halaman diperbarui otomatis).</li><li>Putar klip bersama audio VO untuk tiap scene.</li><li>Perbaiki video prompt lalu klik <b>↻ Scene ini</b> untuk klip yang kurang.</li></ul></div>
+            <div class="col"><h5>Respons sistem</h5><ul><li>Klip MP4 per scene. Durasi dibulatkan ke rentang yang didukung model (default 5–10 dtk).</li></ul></div>
+            <div class="col"><h5>Periksa</h5><ul class="checklist"><li>Gerakan natural, tidak "meleleh".</li><li>Durasi klip cocok dengan audio.</li><li>Transisi antar scene masuk akal.</li></ul></div>
+          </div>
+          <span class="emotion emo-good">🎉 Klik <b>✓ Setujui</b> pada tahap terakhir dan semua tahap selesai.</span>
+        </article>
+
+        <article class="step" id="j-render">
+          <h3>Tahap 7 · Render final</h3>
+          <div class="who">ffmpeg di server · ±10–60 detik</div>
+          <div class="cols">
+            <div class="col"><h5>Aksi pengguna</h5><ul><li>Klik <b>▶ Generate</b> pada tahap Render Final.</li><li>Tonton video gabungan dari awal sampai akhir.</li><li>Unduh <b>MP4</b> dan <b>subtitle .srt</b> bila perlu.</li></ul></div>
+            <div class="col"><h5>Respons sistem</h5><ul><li>Semua klip scene digabung berurutan dengan audio VO masing-masing, plus transisi fade singkat.</li><li>Jika VO lebih panjang dari klip, frame terakhir ditahan sampai VO selesai.</li><li>Output MP4 1080p sesuai rasio proyek, siap untuk semua platform.</li></ul></div>
+            <div class="col"><h5>Periksa</h5><ul class="checklist"><li>Urutan scene dan transisi.</li><li>Audio sinkron dengan visual.</li><li>Catatan render (scene tanpa video/audio).</li></ul></div>
+          </div>
+          <div class="callout">Ingin mengubah satu scene? Buka kembali tahap Video/Audio, generate ulang scene itu, lalu render ulang. Video final lama tetap tersimpan.</div>
+        </article>
+
+        <article class="step" id="j-akun">
+          <h3>Hubungkan akun sosial media (sekali saja)</h3>
+          <div class="who">Admin (pemilik akun resmi) · ±1 menit per platform</div>
+          <div class="cols">
+            <div class="col"><h5>Aksi pengguna</h5><ul><li>Klik <b>Akun Sosial</b> di header.</li><li>Klik <b>Hubungkan</b> pada YouTube, Instagram, Threads, atau TikTok.</li><li>Login & beri izin di halaman resmi platform.</li></ul></div>
+            <div class="col"><h5>Respons sistem</h5><ul><li>Kembali ke aplikasi dengan status "terhubung".</li><li>Token disimpan terenkripsi dan diperbarui otomatis.</li></ul></div>
+            <div class="col"><h5>Syarat</h5><ul><li>Instagram: akun Business/Creator.</li><li>YouTube: akun Google dengan channel.</li><li>Gunakan akun resmi perusahaan sesuai kebijakan.</li></ul></div>
+          </div>
+          <div class="callout warn">Sebelum aplikasi lolos review/audit platform, post TikTok hanya bisa <b>privat</b>, dan Instagram/Threads hanya untuk akun penguji.</div>
+        </article>
+
+        <article class="step" id="j-publikasi">
+          <h3>Publikasi langsung atau terjadwal</h3>
+          <div class="who">Marketing / Comms · 2–5 menit</div>
+          <div class="cols">
+            <div class="col"><h5>Aksi pengguna</h5><ul>
+              <li>Di kartu <b>📣 Publikasi</b> (muncul setelah render), centang akun tujuan.</li>
+              <li>Klik <b>✨ Buat draf caption</b>, lalu edit caption & judul per platform.</li>
+              <li>Pilih visibilitas, <b>Sekarang</b> atau <b>Jadwalkan</b> (tanggal & jam lokal), biarkan <b>Label konten dibuat AI</b> tercentang.</li>
+              <li>Klik <b>Kirim ke antrean publikasi</b>. Jika persetujuan aktif, admin menekan <b>Setujui</b>.</li></ul></div>
+            <div class="col"><h5>Respons sistem</h5><ul>
+              <li>Status: <span class="status s-review">Menunggu persetujuan</span> → <span class="status s-ready">Terjadwal</span> → <span class="status s-gen">Mengunggah…</span> → <span class="status s-approved">Terbit</span>.</li>
+              <li>Link post muncul di tabel riwayat.</li>
+              <li>Gagal sementara dicoba ulang otomatis (maks 3 kali).</li></ul></div>
+            <div class="col"><h5>Periksa</h5><ul class="checklist"><li>Caption bebas data pribadi & klaim berlebihan.</li><li>Akun tujuan benar.</li><li>Jadwal sesuai zona waktu Anda.</li></ul></div>
+          </div>
+          <div class="callout">Post yang belum diproses bisa <b>Batal</b>. Post berstatus <b>Gagal</b> karena terputus perlu dicek manual di aplikasi platform sebelum dikirim ulang, agar tidak tayang dobel.</div>
+          <span class="emotion emo-good">🚀 Satu video final → empat platform, sekaligus atau sesuai jadwal.</span>
+        </article>
+
+        <article class="step" id="j-export">
+          <h3>Export & unduh</h3>
+          <div class="who">Semua persona</div>
+          <div class="cols">
+            <div class="col"><h5>Aksi pengguna</h5><ul><li>Klik <b>⬇ Export JSON</b> di header proyek untuk storyboard, naskah, dan prompt lengkap.</li><li>Unduh media per scene (gambar, video, audio).</li></ul></div>
+            <div class="col"><h5>Langkah lanjutan (opsional)</h5><ul><li>Video final + .srt bisa diolah lagi di editor (CapCut, Premiere, DaVinci) untuk musik, logo, atau teks.</li></ul></div>
+          </div>
+          <div class="callout">Export JSON berisi storyboard, naskah, prompt, dan riwayat aset untuk arsip/dokumentasi proyek.</div>
+        </article>
+
+        <article class="step" id="j-hapus">
+          <h3>Hapus proyek</h3>
+          <div class="who">Pemilik proyek</div>
+          <div class="cols">
+            <div class="col"><h5>Aksi pengguna</h5><ul><li>Klik <b>Hapus</b> di header proyek, lalu konfirmasi.</li></ul></div>
+            <div class="col"><h5>Respons sistem</h5><ul><li>Semua data proyek (scene, naskah, prompt) <b>dan</b> semua file (referensi & hasil generate) dihapus permanen.</li><li>Tindakan tercatat di audit log.</li></ul></div>
+          </div>
+          <div class="callout warn">Tidak bisa dibatalkan. Export & unduh dulu file yang masih dibutuhkan.</div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===================== REVISI ===================== -->
+    <section id="revisi">
+      <h2>Pola review & revisi</h2>
+      <p class="lead">Tiga cara merevisi, dari yang paling ringan sampai paling luas.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Kebutuhan</th><th>Cara</th><th>Dampak</th></tr></thead>
+          <tbody>
+            <tr><td>Ubah sedikit kata/angka</td><td>Edit langsung di kartu scene → <b>Simpan</b></td><td>Hanya scene itu. Tanpa biaya AI.</td></tr>
+            <tr><td>Satu scene kurang pas</td><td>Tulis feedback di panel tahap → <b>↻ Scene ini</b></td><td>Hanya scene itu yang dibuat ulang.</td></tr>
+            <tr><td>Arah keseluruhan salah</td><td>Tulis feedback → <b>↻ Generate ulang (semua scene)</b></td><td>Seluruh tahap dibuat ulang.</td></tr>
+            <tr><td>Perlu mengubah tahap yang sudah disetujui</td><td><b>✎ Buka kembali untuk revisi</b></td><td>Tahap sesudahnya kembali ke <span class="status s-review">Perlu review</span> (jika sudah punya hasil) atau <span class="status s-locked">Terkunci</span>.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>Menulis feedback yang efektif</h3>
+      <div class="grid g2">
+        <div class="card"><b style="color:var(--err)">✗ Kurang efektif</b><p class="lead" style="margin:6px 0 0">"Kurang bagus, buat lebih menarik."</p></div>
+        <div class="card"><b style="color:var(--ok)">✓ Efektif</b><p class="lead" style="margin:6px 0 0">"Scene 1 butuh hook lebih kuat: buka dengan masalah nasabah antre di kantor. Kurangi jadi 5 scene, total 30 detik. Tone lebih hangat."</p></div>
+      </div>
+    </section>
+
+    <!-- ===================== JENIS ===================== -->
+    <section id="jenis">
+      <h2>Tips per jenis video</h2>
+      <div class="grid g3">
+        <div class="card">
+          <h3 class="doc" style="margin-top:0">Dokumentasi</h3>
+          <ul>
+            <li>Tulis langkah proses berurutan di brief (1, 2, 3…).</li>
+            <li>Gaya "Foto dokumenter" atau "Foto realistis".</li>
+            <li>Unggah screenshot aplikasi/formulir sebagai referensi (tanpa data asli).</li>
+            <li>Satu langkah = satu scene.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3 class="ad" style="margin-top:0">Iklan</h3>
+          <ul>
+            <li>Sebutkan hook, manfaat utama, dan CTA di brief.</li>
+            <li>Rasio 9:16 untuk Reels/TikTok, 4:5 untuk feed.</li>
+            <li>Unggah foto produk & brand guideline (warna, font) dengan catatan jelas.</li>
+            <li>Teks/logo ditambahkan di editor, bukan di prompt.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3 class="drama" style="margin-top:0">Drama</h3>
+          <ul>
+            <li>Jelaskan tokoh (usia, penampilan, pakaian) dan konflik di brief.</li>
+            <li>Unggah referensi wajah/kostum <b>dengan persetujuan orangnya</b>.</li>
+            <li>Gaya "Sinematik". Periksa konsistensi karakter di tahap prompt.</li>
+            <li>Gunakan format dialog di voice over.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== DATA ===================== -->
+    <section id="data">
+      <h2>Perlindungan data</h2>
+      <p class="lead">Aplikasi mengikuti prinsip ISO/IEC 27001:2022 dan UU Pelindungan Data Pribadi. Peran pengguna:</p>
+      <div class="grid g2">
+        <div class="card">
+          <h3 style="margin-top:0">Ke mana data Anda dikirim</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Data</th><th>Dikirim ke</th></tr></thead>
+              <tbody>
+                <tr><td>Brief, storyboard, gambar referensi</td><td>Anthropic (Claude)</td></tr>
+                <tr><td>Prompt & gambar referensi, keyframe</td><td>BytePlus (region Singapura)</td></tr>
+                <tr><td>Naskah voice over</td><td>OpenAI (TTS)</td></tr>
+                <tr><td>Video final, caption, judul (saat publikasi)</td><td>Google/YouTube, Meta (Instagram, Threads), TikTok</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">Kewajiban pengguna</h3>
+          <ul class="checklist">
+            <li>Tidak memasukkan data pribadi nasabah/karyawan ke brief, naskah, atau referensi.</li>
+            <li>Hanya mengunggah media yang Anda miliki haknya.</li>
+            <li>Memiliki persetujuan tertulis dari setiap orang yang dapat dikenali di foto/video referensi.</li>
+            <li>Menghapus proyek yang tidak lagi diperlukan.</li>
+            <li>Tidak meminjamkan akun atau password. Aktivitas tercatat atas nama pemilik akun.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout warn">Aktivitas penting (login, buat/ubah/hapus proyek, unggah, generate, setujui, export) tercatat di audit log.</div>
+    </section>
+
+    <!-- ===================== MASALAH ===================== -->
+    <section id="masalah">
+      <h2>Kendala & solusi</h2>
+      <details><summary>Muncul pesan "Claude menolak permintaan ini (kebijakan konten)"</summary>
+        <p>Brief atau feedback dianggap melanggar kebijakan konten. Ubah kata-kata yang sensitif (kekerasan, klaim medis/keuangan berlebihan, tokoh nyata) lalu generate ulang.</p></details>
+      <details><summary>"Rate limit, coba lagi sebentar"</summary>
+        <p>Terlalu banyak permintaan dalam waktu singkat. Tunggu 1–2 menit lalu klik Generate lagi. Tahap otomatis kembali ke status Siap.</p></details>
+      <details><summary>Gambar/video hanya berupa kartu ungu bertuliskan "MOCK"</summary>
+        <p>Provider gambar/video/TTS masih mode <code>mock</code> (placeholder). Hubungi admin untuk mengaktifkan BytePlus / OpenAI.</p></details>
+      <details><summary>Beberapa scene gagal, sisanya berhasil</summary>
+        <p>Detail kegagalan tampil di panel tahap. Perbaiki prompt scene tersebut lalu klik <b>↻ Scene ini</b>. Tidak perlu generate ulang semua.</p></details>
+      <details><summary>Durasi klip video berbeda dari durasi scene</summary>
+        <p>Model video hanya mendukung rentang durasi tertentu, sehingga durasi dibulatkan ke rentang tersebut (default 5–10 detik). Sesuaikan durasi scene atau potong di editor.</p></details>
+      <details><summary>Karakter berubah wajah/pakaian antar scene</summary>
+        <ul><li>Unggah referensi wajah/kostum dengan catatan spesifik.</li><li>Pastikan deskripsi karakter di setiap image prompt identik.</li><li>Ulangi scene yang menyimpang dengan <b>↻ Scene ini</b>.</li></ul></details>
+      <details><summary>Upload ditolak: "tipe file tidak didukung"</summary>
+        <p>Hanya PNG, JPEG, WEBP, GIF, MP4, WEBM, dan MOV yang diterima, dengan batas ukuran sesuai pengaturan (default 100 MB). Tipe file dicek dari isi file, bukan dari ekstensinya.</p></details>
+      <details><summary>Tahap macet di "Memproses…" setelah server restart</summary>
+        <p>Saat server menyala lagi, tahap yang terputus otomatis kembali ke status Siap dengan pesan "Dihentikan karena server restart". Klik Generate lagi.</p></details>
+    </section>
+
+    <footer>Storyboard Studio · Dokumentasi User Journey · Untuk pertanyaan teknis & deployment lihat <code>README.md</code> dan <code>DEPLOY-DOKPLOY.md</code>.</footer>
+  </main>
+</div>
+</body>
+</html>
